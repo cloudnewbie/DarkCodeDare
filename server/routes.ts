@@ -1,13 +1,45 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { generateFortune } from "./openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // Fortune generation endpoint
+  app.post("/api/fortune", async (req, res) => {
+    try {
+      const fortune = await generateFortune();
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+      const fortuneData = {
+        cardName: fortune.cardName,
+        fortuneText: fortune.fortuneText,
+        cardImage: fortune.cardImage
+      };
+
+      // Store fortune in memory
+      await storage.createFortune({
+        cardName: fortune.cardName,
+        fortuneText: fortune.fortuneText,
+      });
+
+      res.json(fortuneData);
+    } catch (error) {
+      console.error("Fortune generation error:", error);
+      res.status(500).json({ 
+        error: "The spirits are unable to communicate at this time" 
+      });
+    }
+  });
+
+  // Get fortune history (optional, for future enhancement)
+  app.get("/api/fortunes", async (req, res) => {
+    try {
+      const fortunes = await storage.getAllFortunes();
+      res.json(fortunes);
+    } catch (error) {
+      console.error("Error fetching fortunes:", error);
+      res.status(500).json({ error: "Failed to retrieve fortune history" });
+    }
+  });
 
   const httpServer = createServer(app);
 
