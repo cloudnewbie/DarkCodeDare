@@ -15,10 +15,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cardImage: fortune.cardImage
       };
 
-      // Store fortune in memory
+      // Store fortune in database
       await storage.createFortune({
+        userId: null,
         cardName: fortune.cardName,
         fortuneText: fortune.fortuneText,
+        cardImage: fortune.cardImage,
+        readingType: 'single-card',
+        isShared: false,
       });
 
       res.json(fortuneData);
