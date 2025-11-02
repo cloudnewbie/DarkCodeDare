@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { HeroSection } from "@/components/HeroSection";
 import { ReadingSection } from "@/components/ReadingSection";
 import { SoundToggle } from "@/components/SoundToggle";
 import { AtmosphericEffects } from "@/components/AtmosphericEffects";
 import { CursorEffects } from "@/components/CursorEffects";
+import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Scroll } from "lucide-react";
 import type { FortuneResponse } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import hauntedBg from "@assets/generated_images/Haunted_mansion_interior_background_d5a5c029.png";
@@ -66,6 +69,23 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen overflow-hidden">
+      {/* Navigation Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <h2 className="font-serif text-2xl font-bold text-foreground text-glow-primary">
+            The Haunted Fortune Teller
+          </h2>
+          <div className="flex items-center gap-4">
+            <Button variant="outline" size="default" className="gap-2" data-testid="button-view-history" asChild>
+              <Link href="/history">
+                <Scroll className="w-4 h-4" />
+                Fortune Archive
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </header>
+
       {/* Background Image with overlay */}
       <div 
         className="fixed inset-0 z-0"
