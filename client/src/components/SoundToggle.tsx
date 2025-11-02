@@ -1,115 +1,76 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Volume2, VolumeX } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function SoundToggle() {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [audioError, setAudioError] = useState(false);
-  const oscillatorRef = useRef<OscillatorNode | null>(null);
+  const oscillatorsRef = useRef<OscillatorNode[]>([]);
   const gainNodeRef = useRef<GainNode | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  useEffect(() => {
-    // Create an AudioContext for generating ambient drone sounds
-    try {
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Create oscillators for a haunting ambient sound
-      const createAmbientSound = () => {
-        if (!audioContextRef.current) return;
-
-        const context = audioContextRef.current;
-        
-        // Create oscillator for deep drone
-        const oscillator = context.createOscillator();
-        oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(55, context.currentTime); // Low A note
-        
-        // Create gain node for volume control
-        const gainNode = context.createGain();
-        gainNode.gain.setValueAtTime(0.15, context.currentTime);
-        
-        // Connect nodes
-        oscillator.connect(gainNode);
-        gainNode.connect(context.destination);
-        
-        oscillatorRef.current = oscillator;
-        gainNodeRef.current = gainNode;
-      };
-
-      createAmbientSound();
-    } catch (error) {
-      console.error("Audio context creation failed:", error);
-      setAudioError(true);
-    }
-
-    return () => {
-      if (oscillatorRef.current) {
-        try {
-          oscillatorRef.current.stop();
-        } catch (e) {
-          // Oscillator might not be started
-        }
-        oscillatorRef.current = null;
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-        audioContextRef.current = null;
-      }
-    };
-  }, []);
-
   const toggleSound = async () => {
-    if (audioError || !audioContextRef.current || !oscillatorRef.current || !gainNodeRef.current) {
-      console.error("Audio not available");
-      return;
-    }
-
     try {
       if (isPlaying) {
-        // Stop the sound by ramping down volume
-        gainNodeRef.current.gain.exponentialRampToValueAtTime(
-          0.001,
-          audioContextRef.current.currentTime + 0.5
-        );
-        setTimeout(() => {
-          if (oscillatorRef.current) {
-            try {
-              oscillatorRef.current.stop();
-            } catch (e) {
-              // Already stopped
-            }
+        // Stop all oscillators
+        oscillatorsRef.current.forEach(osc => {
+          try {
+            osc.stop();
+          } catch (e) {
+            // Already stopped
           }
-          setIsPlaying(false);
-        }, 500);
+        });
+        oscillatorsRef.current = [];
+        
+        if (audioContextRef.current) {
+          audioContextRef.current.close();
+          audioContextRef.current = null;
+        }
+        gainNodeRef.current = null;
+        setIsPlaying(false);
       } else {
-        // Resume audio context if suspended
-        if (audioContextRef.current.state === 'suspended') {
-          await audioContextRef.current.resume();
+        // Create new audio context
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const context = audioContextRef.current;
+
+        // Resume if suspended (browser autoplay policy)
+        if (context.state === 'suspended') {
+          await context.resume();
         }
 
-        // Recreate oscillator if needed
-        if (oscillatorRef.current && audioContextRef.current) {
-          const context = audioContextRef.current;
-          const oscillator = context.createOscillator();
-          oscillator.type = 'sine';
-          oscillator.frequency.setValueAtTime(55, context.currentTime);
+        // Create gain node for volume control
+        const gainNode = context.createGain();
+        gainNode.gain.setValueAtTime(0, context.currentTime);
+        gainNode.connect(context.destination);
+        gainNodeRef.current = gainNode;
+
+        // Create multiple oscillators for a rich, haunting ambient sound
+        const frequencies = [110, 220, 165]; // A2, A3, E3 - creates an eerie chord
+        const types: OscillatorType[] = ['sine', 'sine', 'triangle'];
+        const volumes = [0.08, 0.05, 0.03];
+
+        frequencies.forEach((freq, i) => {
+          const osc = context.createOscillator();
+          osc.type = types[i];
+          osc.frequency.setValueAtTime(freq, context.currentTime);
           
-          oscillator.connect(gainNodeRef.current);
-          oscillator.start();
-          oscillatorRef.current = oscillator;
+          // Individual gain for this oscillator
+          const oscGain = context.createGain();
+          oscGain.gain.setValueAtTime(volumes[i], context.currentTime);
+          
+          osc.connect(oscGain);
+          oscGain.connect(gainNode);
+          osc.start();
+          
+          oscillatorsRef.current.push(osc);
+        });
 
-          // Ramp up volume
-          gainNodeRef.current.gain.setValueAtTime(0.001, context.currentTime);
-          gainNodeRef.current.gain.exponentialRampToValueAtTime(0.15, context.currentTime + 0.5);
-        }
-
+        // Fade in
+        gainNode.gain.linearRampToValueAtTime(1, context.currentTime + 1);
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error("Audio playback error:", error);
-      setAudioError(true);
+      console.error("Audio error:", error);
     }
   };
 

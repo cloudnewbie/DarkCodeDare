@@ -41,7 +41,7 @@ Only return the fortune text itself, nothing else.`;
       // the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
       model: "gpt-5",
       messages: [{ role: "user", content: prompt }],
-      max_completion_tokens: 300,
+      max_completion_tokens: 1000, // Increased to account for reasoning tokens in gpt-5
     });
 
     const fortuneText = response.choices[0]?.message?.content || "The spirits remain silent... try again.";
