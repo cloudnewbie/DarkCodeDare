@@ -65,9 +65,10 @@ Preferred communication style: Simple, everyday language.
 - Connection pooling via @neondatabase/serverless
 
 **Schema Design**
-- Drizzle ORM with two main tables: users and fortunes
+- Drizzle ORM with three main tables: users, fortunes, and sessions
 - Fortune model fields: id (UUID), userId (nullable FK), cardName, fortuneText, cardImage, readingType, isShared, timestamp
-- User model fields: id (UUID), username (unique), passwordHash, curseLevel, fortuneStreak, createdAt
+- User model fields: id (UUID), email (unique), firstName, lastName, profileImageUrl, curseLevel, fortuneStreak, createdAt, updatedAt
+- Sessions table: sid (PK), sess (JSON), expire (timestamp) for PostgreSQL session storage
 - Zod validation schemas derived from Drizzle schema for type safety
 - Foreign key relationship: fortunes.userId → users.id (nullable for anonymous fortunes)
 
@@ -91,7 +92,13 @@ Preferred communication style: Simple, everyday language.
 **Database & ORM**
 - Drizzle ORM - Type-safe database operations and migrations
 - @neondatabase/serverless - PostgreSQL client optimized for serverless environments
-- connect-pg-simple - PostgreSQL session store (configured but not actively used)
+- connect-pg-simple - PostgreSQL session store for Replit Auth sessions
+
+**Authentication Libraries**
+- openid-client - OpenID Connect (OIDC) client for Replit Auth integration
+- passport - Authentication middleware for Express
+- express-session - Session management middleware
+- memoizee - Token caching for performance optimization
 
 **Development Tools**
 - tsx - TypeScript execution for development server
@@ -164,6 +171,57 @@ Preferred communication style: Simple, everyday language.
    - Empty state with call-to-action when no fortunes exist
    - Hover elevation effects on cards
 
+### Phase 3: Replit Auth Integration (Completed)
+1. **Backend Authentication System**
+   - Implemented Replit Auth using OpenID Connect (OIDC) protocol
+   - Created server/replitAuth.ts with dynamic strategy registration per domain
+   - PostgreSQL session storage using connect-pg-simple
+   - Environment-aware configuration:
+     - Development: http protocol, non-secure cookies, port preservation (:5000)
+     - Production: https protocol, secure cookies
+   - Token caching with memoizee for performance
+   - Passport.js integration for authentication middleware
+
+2. **Authentication Endpoints**
+   - GET /api/login - Initiates OAuth flow, redirects to Replit identity provider
+   - GET /api/callback - OAuth callback handler, creates/updates user session
+   - GET /api/logout - Clears session, redirects to Replit logout endpoint
+   - GET /api/auth/user - Returns current authenticated user or 401 Unauthorized
+   - isAuthenticated middleware for protecting routes (currently not enforced)
+
+3. **Database Schema Updates**
+   - Updated users table to Replit Auth fields: email, firstName, lastName, profileImageUrl, updatedAt
+   - Removed password-based authentication fields (username, passwordHash)
+   - Preserved app-specific fields: curseLevel, fortuneStreak
+   - Added sessions table for PostgreSQL session storage
+   - Fortunes automatically link to authenticated users via userId
+
+4. **Storage Interface Updates**
+   - Added getUser(id) method for fetching user by ID
+   - Added upsertUser(user) method for syncing Replit Auth users to database
+   - Removed old password-based authentication methods
+
+5. **Frontend Authentication Flow**
+   - Created useAuth hook for checking authentication state
+   - Created authUtils for error handling and user management
+   - Landing page for logged-out users with "Enter the Séance" login button
+   - Home page updated with user avatar, name display, and "Leave Séance" logout button
+   - App.tsx routing: Landing for logged-out, Home/History for authenticated users
+   - Conditional navigation based on authentication state
+
+6. **Critical Fixes Applied**
+   - Session cookie secure flag conditional on NODE_ENV (only secure in production)
+   - Callback URL uses req.protocol for protocol-aware redirects (http in dev, https in production)
+   - Host resolution uses req.get("host") to preserve port number in development
+   - All fixes verified by architect review and E2E testing
+
+7. **End-to-End Testing**
+   - Tested OIDC login flow with test claims
+   - Verified fortune creation links to authenticated userId
+   - Confirmed fortune history displays user-specific fortunes
+   - Validated logout flow and return to Landing page
+   - All test scenarios passed successfully
+
 ### Current Features
 - ✅ AI-powered fortune generation using OpenAI GPT-5
 - ✅ Atmospheric visual effects (fog, candles, spirits, particles)
@@ -173,10 +231,15 @@ Preferred communication style: Simple, everyday language.
 - ✅ PostgreSQL database with fortune persistence
 - ✅ Fortune history gallery with tombstone-styled cards
 - ✅ Responsive navigation between home and history pages
+- ✅ Replit Auth integration (Google, GitHub, X, Apple, email/password login)
+- ✅ User authentication with session management and PostgreSQL storage
+- ✅ User profile display with avatar and name
+- ✅ Fortunes automatically linked to authenticated users
 
 ### Next Phase Features (Pending)
 - Shareable fortune cards with custom graphics for social media
-- User authentication system (leveraging existing users table)
 - Multiple fortune-telling methods (3-card tarot spread, rune casting, ouija board)
-- Curse level and fortune streak tracking
+- Curse level and fortune streak tracking based on user behavior
+- User-specific fortune history filtering and statistics
 - WebGL shader effects for otherworldly visual distortions
+- Protected fortune creation (require login to generate fortunes)
