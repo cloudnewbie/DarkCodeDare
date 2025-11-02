@@ -7,9 +7,11 @@ import { SoundToggle } from "@/components/SoundToggle";
 import { AtmosphericEffects } from "@/components/AtmosphericEffects";
 import { CursorEffects } from "@/components/CursorEffects";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { Scroll } from "lucide-react";
-import type { FortuneResponse } from "@shared/schema";
+import { useAuth } from "@/hooks/useAuth";
+import { Scroll, LogOut } from "lucide-react";
+import type { FortuneResponse, User } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
 import hauntedBg from "@assets/generated_images/Haunted_mansion_interior_background_d5a5c029.png";
 import moonCard from "@assets/generated_images/Moon_tarot_card_illustration_2fb9b74f.png";
@@ -20,6 +22,7 @@ export default function Home() {
   const [showReading, setShowReading] = useState(false);
   const [fortune, setFortune] = useState<FortuneResponse | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth() as { user: User | null };
 
   const fortuneMutation = useMutation({
     mutationFn: async () => {
@@ -76,11 +79,34 @@ export default function Home() {
             The Haunted Fortune Teller
           </h2>
           <div className="flex items-center gap-4">
+            {user && (
+              <div className="flex items-center gap-3 text-sm text-foreground/90">
+                <Avatar className="w-8 h-8" data-testid="avatar-user">
+                  <AvatarImage src={user.profileImageUrl || undefined} alt={user.email || "User"} />
+                  <AvatarFallback className="bg-primary text-primary-foreground">
+                    {user.firstName?.[0] || user.email?.[0]?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="hidden md:inline" data-testid="text-user-name">
+                  {user.firstName || user.email}
+                </span>
+              </div>
+            )}
             <Button variant="outline" size="default" className="gap-2" data-testid="button-view-history" asChild>
               <Link href="/history">
                 <Scroll className="w-4 h-4" />
                 Fortune Archive
               </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="default"
+              className="gap-2"
+              onClick={() => window.location.href = '/api/logout'}
+              data-testid="button-logout"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden md:inline">Leave Séance</span>
             </Button>
           </div>
         </div>

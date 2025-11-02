@@ -1,4 +1,4 @@
-import { type Fortune, type InsertFortune, type User, type InsertUser, fortunes, users } from "@shared/schema";
+import { type Fortune, type InsertFortune, type User, type UpsertUser, fortunes, users } from "@shared/schema";
 import { db } from "../db/client";
 import { desc, eq } from "drizzle-orm";
 
@@ -6,9 +6,8 @@ export interface IStorage {
   createFortune(fortune: InsertFortune): Promise<Fortune>;
   getAllFortunes(): Promise<Fortune[]>;
   getFortune(id: string): Promise<Fortune | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  getUser(username: string): Promise<User | undefined>;
-  getUserById(id: string): Promise<User | undefined>;
+  getUser(id: string): Promise<User | undefined>;
+  upsertUser(user: UpsertUser): Promise<User>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -26,18 +25,23 @@ export class DatabaseStorage implements IStorage {
     return fortune;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db.insert(users).values(insertUser).returning();
-    return user;
-  }
-
-  async getUser(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username)).limit(1);
-    return user;
-  }
-
-  async getUserById(id: string): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    return user;
+  }
+
+  async upsertUser(userData: UpsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: users.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
     return user;
   }
 }

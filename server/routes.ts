@@ -2,10 +2,26 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { generateFortune } from "./openai";
+import { setupAuth, isAuthenticated } from "./replitAuth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Fortune generation endpoint
-  app.post("/api/fortune", async (req, res) => {
+  // Setup Replit Auth
+  await setupAuth(app);
+
+  // Auth endpoint to get current user
+  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      res.json(user);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Fortune generation endpoint (works for both authenticated and anonymous users)
+  app.post("/api/fortune", async (req: any, res) => {
     try {
       const fortune = await generateFortune();
 
@@ -15,9 +31,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cardImage: fortune.cardImage
       };
 
+      // Link fortune to user if authenticated
+      const userId = req.isAuthenticated() ? req.user?.claims?.sub : null;
+
       // Store fortune in database
       await storage.createFortune({
-        userId: null,
+        userId,
         cardName: fortune.cardName,
         fortuneText: fortune.fortuneText,
         cardImage: fortune.cardImage,
