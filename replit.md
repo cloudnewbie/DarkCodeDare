@@ -58,20 +58,24 @@ Preferred communication style: Simple, everyday language.
 
 ### Data Storage
 
-**Current Implementation**
-- In-memory storage using Map data structure
-- MemStorage class implementing IStorage interface for fortune persistence
-- UUID generation for unique fortune identifiers
+**Database Implementation**
+- PostgreSQL database via Neon serverless (production-ready)
+- DatabaseStorage class with full CRUD operations
+- WebSocket polyfill configured for Replit environment compatibility
+- Connection pooling via @neondatabase/serverless
 
 **Schema Design**
-- Drizzle ORM schema defined with PostgreSQL dialect
-- Fortune model with fields: id, cardName, fortuneText, timestamp
+- Drizzle ORM with two main tables: users and fortunes
+- Fortune model fields: id (UUID), userId (nullable FK), cardName, fortuneText, cardImage, readingType, isShared, timestamp
+- User model fields: id (UUID), username (unique), passwordHash, curseLevel, fortuneStreak, createdAt
 - Zod validation schemas derived from Drizzle schema for type safety
+- Foreign key relationship: fortunes.userId → users.id (nullable for anonymous fortunes)
 
 **Database Architecture**
-- Prepared for PostgreSQL integration via Neon serverless database
-- Migration system configured with Drizzle Kit
+- Neon PostgreSQL database fully integrated and tested
+- Migration system via Drizzle Kit (`npm run db:push`)
 - Schema colocation in shared directory for type reusability across client/server
+- Database client configured with ws polyfill and pipelineConnect disabled for Replit compatibility
 
 ### External Dependencies
 
@@ -109,3 +113,70 @@ Preferred communication style: Simple, everyday language.
 - Cinzel - Primary display font for mystical headings
 - Spectral - Secondary serif for fortune text
 - Creepster - Decorative font for special emphasis
+
+## Recent Changes (November 2, 2025)
+
+### Phase 1: MVP Enhancement - Atmospheric Effects (Completed)
+1. **Visual Atmosphere**
+   - Created AtmosphericEffects component with fog animations, flickering candles, cobwebs, and floating spirits
+   - Added layered vignette shadows and depth effects
+   - Integrated Framer Motion for smooth, performance-optimized animations
+
+2. **Audio System**
+   - Implemented 5-layer ambient soundscape: deep drone (55Hz), harmonic overtones (110/165/220Hz), wind texture, whispered noise filtering, and distant metallic chains
+   - Created useCardFlipSound hook for synthesized creak sound on card flips
+   - Proper audio cleanup with gain ramping and context management
+
+3. **Interactive Cursor Effects**
+   - Created CursorEffects component with crystal ball glow and ghostly particle trail
+   - Particle system with proper state management and cleanup (max 15 particles, trimmed every 2s)
+   - Performance-optimized with minimal CPU/GPU overhead
+
+4. **Enhanced Typography**
+   - Added text-glow-primary and text-glow-accent CSS utilities for glowing text effects
+   - Implemented dripping animation for gothic horror aesthetic
+   - Applied to hero titles and fortune display headers
+
+### Phase 2: Database Integration & Fortune History (Completed)
+1. **Database Setup**
+   - Created PostgreSQL database with Neon serverless
+   - Configured WebSocket polyfill (ws library) for Replit environment
+   - Disabled pipelineConnect for compatibility
+   - Successfully pushed schema migrations
+
+2. **Schema Enhancement**
+   - Extended fortunes table with: cardImage, readingType, isShared fields
+   - Created users table with: curseLevel, fortuneStreak tracking
+   - Nullable userId FK allows anonymous fortunes while supporting future user linkage
+
+3. **Storage Layer**
+   - Replaced MemStorage with DatabaseStorage implementation
+   - Type-safe CRUD operations using Drizzle ORM
+   - All fortunes now persist to PostgreSQL with complete metadata
+
+4. **Fortune History Gallery**
+   - Created /history route with FortuneHistory page component
+   - Tombstone-styled fortune cards with card images, glowing titles, truncated text, timestamps
+   - Responsive grid: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+   - Added navigation header with "Fortune Archive" link on homepage
+   - Fixed accessibility: Button asChild pattern for Link+Button combinations
+   - Image mapping system for tarot card identifiers → imported assets
+   - Empty state with call-to-action when no fortunes exist
+   - Hover elevation effects on cards
+
+### Current Features
+- ✅ AI-powered fortune generation using OpenAI GPT-5
+- ✅ Atmospheric visual effects (fog, candles, spirits, particles)
+- ✅ 5-layer ambient soundscape with card flip sound effects
+- ✅ Interactive cursor effects with particle trail
+- ✅ Glowing gothic typography with drip animations
+- ✅ PostgreSQL database with fortune persistence
+- ✅ Fortune history gallery with tombstone-styled cards
+- ✅ Responsive navigation between home and history pages
+
+### Next Phase Features (Pending)
+- Shareable fortune cards with custom graphics for social media
+- User authentication system (leveraging existing users table)
+- Multiple fortune-telling methods (3-card tarot spread, rune casting, ouija board)
+- Curse level and fortune streak tracking
+- WebGL shader effects for otherworldly visual distortions
