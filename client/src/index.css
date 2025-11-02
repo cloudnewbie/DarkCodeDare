@@ -94,6 +94,8 @@
   /* Mystical glow effects for Kiroween */
   --glow-primary: 0 0 20px hsl(280 75% 45% / 0.5), 0 0 40px hsl(280 75% 45% / 0.3);
   --glow-accent: 0 0 20px hsl(140 60% 35% / 0.5), 0 0 40px hsl(140 60% 35% / 0.3);
+  --text-glow-primary: 0 0 10px hsl(280 75% 65% / 0.8), 0 0 20px hsl(280 75% 55% / 0.5), 0 0 30px hsl(280 75% 45% / 0.3);
+  --text-glow-accent: 0 0 10px hsl(140 60% 55% / 0.8), 0 0 20px hsl(140 60% 45% / 0.5), 0 0 30px hsl(140 60% 35% / 0.3);
 
   /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
 
@@ -323,11 +325,25 @@
   animation: shimmer 3s infinite;
 }
 
-/* Text glow effect */
+/* Text glow effects */
 .text-glow {
-  text-shadow: var(--glow-primary);
+  text-shadow: var(--text-glow-primary);
 }
 
 .text-glow-accent {
-  text-shadow: var(--glow-accent);
+  text-shadow: var(--text-glow-accent);
+}
+
+.text-glow-primary {
+  text-shadow: var(--text-glow-primary);
+}
+
+/* Gothic dripping effect */
+@keyframes drip {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+.animate-drip {
+  animation: drip 3s ease-in-out infinite;
 }

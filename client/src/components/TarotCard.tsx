@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useCardFlipSound } from "@/hooks/useCardFlipSound";
 import cardBack from "@assets/generated_images/Ornate_tarot_card_back_bbc6b077.png";
 
 interface TarotCardProps {
@@ -12,9 +13,11 @@ interface TarotCardProps {
 
 export function TarotCard({ isRevealed, cardImage, cardName, onFlip, delay = 0 }: TarotCardProps) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const { playCreak } = useCardFlipSound();
 
   const handleClick = () => {
     if (!isRevealed && onFlip) {
+      playCreak();
       setIsFlipped(true);
       setTimeout(() => {
         onFlip();

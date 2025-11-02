@@ -68,12 +68,12 @@ export function HeroSection({ onBeginReading }: HeroSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 0.4 }}
-          className="font-serif text-6xl md:text-8xl font-bold mb-6 tracking-wider text-glow"
+          className="font-serif text-6xl md:text-8xl font-bold mb-6 tracking-wider text-glow-primary"
           data-testid="text-hero-title"
         >
           THE HAUNTED
           <br />
-          <span className="text-primary animate-pulse-glow">FORTUNE TELLER</span>
+          <span className="text-primary animate-pulse-glow text-glow-primary animate-drip">FORTUNE TELLER</span>
         </motion.h1>
 
         <motion.p

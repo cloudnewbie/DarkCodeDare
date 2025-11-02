@@ -3,6 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { HeroSection } from "@/components/HeroSection";
 import { ReadingSection } from "@/components/ReadingSection";
 import { SoundToggle } from "@/components/SoundToggle";
+import { AtmosphericEffects } from "@/components/AtmosphericEffects";
+import { CursorEffects } from "@/components/CursorEffects";
 import { useToast } from "@/hooks/use-toast";
 import type { FortuneResponse } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -78,15 +80,11 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-transparent to-background/80" />
       </div>
 
-      {/* Floating fog effect */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div 
-          className="absolute inset-0 opacity-30"
-          style={{
-            background: "radial-gradient(ellipse at 20% 50%, hsl(var(--primary) / 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 50%, hsl(var(--accent) / 0.15) 0%, transparent 50%)",
-          }}
-        />
-      </div>
+      {/* Atmospheric effects */}
+      <AtmosphericEffects />
+      
+      {/* Cursor effects */}
+      <CursorEffects />
 
       {/* Content */}
       <div className="relative z-10">

@@ -56,7 +56,7 @@ export function FortuneDisplay({ fortuneText, isRevealing }: FortuneDisplayProps
             <Scroll className="w-8 h-8 text-primary animate-pulse-glow" />
           </div>
 
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-center mb-8 tracking-wide text-primary">
+          <h2 className="font-serif text-3xl md:text-4xl font-bold text-center mb-8 tracking-wide text-primary text-glow-primary">
             Your Fortune
           </h2>
 
