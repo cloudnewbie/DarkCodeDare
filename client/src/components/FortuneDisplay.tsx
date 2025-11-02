@@ -12,6 +12,9 @@ export function FortuneDisplay({ fortuneText, isRevealing }: FortuneDisplayProps
   const [displayedText, setDisplayedText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Ensure fortuneText is a string
+  const safeFortuneText = fortuneText || "";
+
   useEffect(() => {
     if (!isRevealing) {
       setDisplayedText("");
@@ -19,15 +22,15 @@ export function FortuneDisplay({ fortuneText, isRevealing }: FortuneDisplayProps
       return;
     }
 
-    if (currentIndex < fortuneText.length) {
+    if (currentIndex < safeFortuneText.length) {
       const timeout = setTimeout(() => {
-        setDisplayedText(fortuneText.slice(0, currentIndex + 1));
+        setDisplayedText(safeFortuneText.slice(0, currentIndex + 1));
         setCurrentIndex(currentIndex + 1);
       }, 30);
 
       return () => clearTimeout(timeout);
     }
-  }, [isRevealing, currentIndex, fortuneText]);
+  }, [isRevealing, currentIndex, safeFortuneText]);
 
   if (!isRevealing && !displayedText) {
     return null;
@@ -66,7 +69,7 @@ export function FortuneDisplay({ fortuneText, isRevealing }: FortuneDisplayProps
           >
             <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-primary first-letter:float-left first-letter:mr-3 first-letter:mt-1">
               {displayedText}
-              {currentIndex < fortuneText.length && (
+              {currentIndex < safeFortuneText.length && (
                 <span className="inline-block w-1 h-6 bg-primary ml-1 animate-flicker" />
               )}
             </p>

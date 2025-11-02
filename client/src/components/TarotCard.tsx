@@ -28,7 +28,7 @@ export function TarotCard({ isRevealed, cardImage, cardName, onFlip, delay = 0 }
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay }}
       className="perspective-1000"
-      data-testid={`card-tarot-${cardName.toLowerCase().replace(/\s+/g, '-')}`}
+      data-testid={`card-tarot-${(cardName || 'unknown').toLowerCase().replace(/\s+/g, '-')}`}
     >
       <motion.div
         className="relative w-48 md:w-64 aspect-[2/3] cursor-pointer group"
